@@ -1,6 +1,6 @@
 # 圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小
 
-Demo：[Demo](https://letswritetw.github.io/comporessjs/)
+Demo：[Demo](https://letswritetw.github.io/letswrite-compressjs/)
 
 <!-- 筆記文：[Let's Write](https://www.letswrite.tw/compressjs/) -->
 
