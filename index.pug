@@ -184,9 +184,35 @@ html(lang="zh-Hant", data-theme="night")
 
         $('downloadBtn').disabled = true;
         $('progressBar').value = 0;
-        $('progressText').textContent = '壓縮中…';
         $('previewPlaceholder').classList.remove('hidden');
         $('preview').classList.add('hidden');
+
+        // 檢查檔案大小是否已經小於目標大小
+        if (file.size <= opts.targetSize) {
+          $('progressText').textContent = '檔案已符合目標大小，無需壓縮';
+          
+          const dataURL = await blobToDataURL(file);
+          
+          $('preview').src = dataURL;
+          $('previewPlaceholder').classList.add('hidden');
+          $('preview').classList.remove('hidden');
+          $('outInfo').textContent = `${origDim.w}×${origDim.h}, ${formatBytes(file.size)} (原圖)`;
+          $('progressBar').value = 100;
+          $('downloadBtn').disabled = false;
+
+          $('downloadBtn').onclick = () => {
+            const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const ext = opts.mimeType.split('/')[1] || 'webp';
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = `${baseName}-compress.${ext}`;
+            a.click();
+          };
+          
+          return;
+        }
+
+        $('progressText').textContent = '壓縮中…';
 
         try {
           const { blob, q } = await compressWithFloor(
