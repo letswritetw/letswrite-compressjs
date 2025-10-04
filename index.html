@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="night">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小 | Let's Write</title>
+    <link rel="canonical" href="https://www.letswrite.tw/compressjs/"/>
+    <meta property="og:url" content="https://letswritetw.github.io/letswrite-compressjs/"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="Let's Write"/>
+    <meta property="og:title" content="圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小 | Let's Write"/>
+    <meta itemprop="name" content="圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小 | Let's Write"/>
+    <meta name="description" content="了解如何使用 Compressor.js 實現圖片壓縮，自動調整圖片品質並轉換為 WebP 格式，壓縮圖片至 600KB 以下，適合前端開發者與網站優化需求。"/>
+    <meta property="og:description" content="了解如何使用 Compressor.js 實現圖片壓縮，自動調整圖片品質並轉換為 WebP 格式，壓縮圖片至 600KB 以下，適合前端開發者與網站優化需求。"/>
+    <meta itemprop="description" content="了解如何使用 Compressor.js 實現圖片壓縮，自動調整圖片品質並轉換為 WebP 格式，壓縮圖片至 600KB 以下，適合前端開發者與網站優化需求。"/>
+    <meta itemprop="image" content="https://letswritetw.github.io/letswrite-compressjs/fb.jpg"/>
+    <meta property="og:image" content="https://letswritetw.github.io/letswrite-compressjs/fb.jpg"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小"/>
+    <link rel="shortcut icon" href="https://letswritetw.github.io/letswritetw/dist/img/logo_512.png"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"/>
+    <link rel="stylesheet" href="dist/style.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Tag Manager-->
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-PGQ9WQT');
+    </script>
+  </head>
+  <body class="min-h-dvh bg-base-200">
+    <!-- Google Tag Manager (noscript)-->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PGQ9WQT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <div class="mx-auto max-w-6xl p-6">
+      <h1 class="mb-2 text-center text-2xl font-bold">圖片壓縮：用 Compressor.js 自動調整品質壓縮至指定大小</h1>
+      <div class="mb-6 text-center text-sm text-gray-400">
+        <p>筆記文：<a class="link link-primary" href="https://www.letswrite.tw/compressjs/" target="_blank">Let's Write</a></p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2">
+        <!-- 左：參數與上傳-->
+        <section class="card bg-base-100 shadow-xl">
+          <div class="card-body space-y-4">
+            <fieldset class="fieldset">
+              <legend class="fieldset-legend">選擇圖片</legend>
+              <input class="input input-primary file-input file-input-primary px-0 w-full" id="upload" type="file" accept="image/*"/>
+            </fieldset>
+            <div class="grid grid-cols-2 gap-4">
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">目標大小(KB)</legend>
+                <input class="input input-primary w-full" id="targetSize" type="number" value="600"/>
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">品質下限</legend>
+                <input class="input input-primary w-full" id="floor" type="number" step="0.01" value="0.40"/>
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">品質每次遞減</legend>
+                <input class="input input-primary w-full" id="step" type="number" step="0.01" value="0.05"/>
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">圖檔輸出格式</legend>
+                <select class="select select-primary" id="mimeType">
+                  <option value="image/webp" selected="selected">WebP</option>
+                  <option value="image/jpeg">JPEG</option>
+                  <option value="image/png">PNG</option>
+                </select>
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">最大寬度(px)</legend>
+                <input class="input input-primary w-full" id="maxWidth" type="number" value="2560"/>
+              </fieldset>
+              <fieldset class="fieldset">
+                <legend class="fieldset-legend">最大高度(px)</legend>
+                <input class="input input-primary w-full" id="maxHeight" type="number" value="1440"/>
+              </fieldset>
+            </div>
+            <div class="space-y-2">
+              <progress class="progress progress-success w-full" id="progressBar" value="0" max="100"></progress>
+              <div class="text-xs text-gray-500" id="progressText">等待上傳</div>
+            </div>
+            <button class="btn btn-primary" id="downloadBtn" disabled="disabled">下載輸出檔</button>
+          </div>
+        </section>
+        <!-- 右：預覽與資訊-->
+        <section class="card bg-base-100 shadow-xl">
+          <div class="card-body space-y-4">
+            <div class="stats stats-vertical shadow w-full">
+              <div class="stat">
+                <div class="stat-title">原圖</div>
+                <div class="stat-value text-sm" id="origInfo">—</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">輸出</div>
+                <div class="stat-value text-sm" id="outInfo">—</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <figure class="flex items-center justify-center bg-base-200 rounded-xl p-4 min-h-[300px]" id="previewContainer"><span class="text-gray-500" id="previewPlaceholder">尚未上傳圖片</span><img class="max-h-[65vh] w-auto rounded-lg shadow-md hidden" id="preview" alt="預覽"/></figure>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <footer class="mx-auto max-w-6xl px-6 pb-6">
+      <div class="flex justify-center text-sm">
+        <p>📦 套件來源：<a class="link link-primary" href="https://github.com/fengyuanchen/compressorjs" target="_blank" rel="noopener noreferrer">Compressor.js</a></p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const formatBytes = (bytes) => `${Math.round(bytes/1024)} KB`;
+      const readImageDim = (blob) => new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = rej;
+        img.src = URL.createObjectURL(blob);
+      });
+      const blobToDataURL = (blob) => new Promise((res) => {
+        const r = new FileReader();
+        r.onloadend = () => res(r.result);
+        r.readAsDataURL(blob);
+      });
+      
+      async function compressWithFloor(file, opts, onTick) {
+        return new Promise((resolve, reject) => {
+          let q = 1.0;
+          let tries = 0;
+          const maxTries = Math.max(1, Math.ceil((1 - opts.floor) / opts.step) + 1);
+      
+          const attempt = () => {
+            new Compressor(file, {
+              quality: q,
+              mimeType: opts.mimeType,
+              maxWidth: opts.maxWidth,
+              maxHeight: opts.maxHeight,
+              success(blob) {
+                tries++;
+                const pct = Math.min(100, Math.round((tries / maxTries) * 100));
+                onTick?.({ q, size: blob.size, pct });
+      
+                if (blob.size > opts.targetSize && (q - opts.step) >= opts.floor) {
+                  q = +(q - opts.step).toFixed(2);
+                  attempt();
+                } else {
+                  resolve({ blob, q });
+                }
+              },
+              error(err) { reject(err); }
+            });
+          };
+          attempt();
+        });
+      }
+      
+      $('upload').addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+      
+        const opts = {
+          targetSize: parseInt($('targetSize').value,10)*1024,
+          floor: parseFloat($('floor').value),
+          step: parseFloat($('step').value),
+          maxWidth: parseInt($('maxWidth').value,10),
+          maxHeight: parseInt($('maxHeight').value,10),
+          mimeType: $('mimeType').value
+        };
+      
+        const origDim = await readImageDim(file);
+        $('origInfo').textContent = `${origDim.w}×${origDim.h}, ${formatBytes(file.size)}`;
+      
+        $('downloadBtn').disabled = true;
+        $('progressBar').value = 0;
+        $('progressText').textContent = '壓縮中…';
+        $('previewPlaceholder').classList.remove('hidden');
+        $('preview').classList.add('hidden');
+      
+        try {
+          const { blob, q } = await compressWithFloor(
+            file,
+            opts,
+            ({ q, size, pct }) => {
+              $('progressBar').value = pct;
+              $('progressText').textContent = `壓縮中… q=${q.toFixed(2)}，目前 ${formatBytes(size)}（${pct}%）`;
+            }
+          );
+      
+          const outDim = await readImageDim(blob);
+          const dataURL = await blobToDataURL(blob);
+      
+          $('preview').src = dataURL;
+          $('previewPlaceholder').classList.add('hidden');
+          $('preview').classList.remove('hidden');
+          $('outInfo').textContent = `${outDim.w}×${outDim.h}, ${formatBytes(blob.size)}, q=${q.toFixed(2)}`;
+          $('progressBar').value = 100;
+          $('progressText').textContent = '完成';
+          $('downloadBtn').disabled = false;
+      
+          $('downloadBtn').onclick = () => {
+            const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const ext = opts.mimeType.split('/')[1] || 'webp';
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = `${baseName}-compress.${ext}`;
+            a.click();
+          };
+        } catch(err) {
+          console.error(err);
+          $('progressText').textContent = '壓縮失敗';
+          $('progressBar').value = 0;
+          $('previewPlaceholder').classList.remove('hidden');
+          $('preview').classList.add('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>
