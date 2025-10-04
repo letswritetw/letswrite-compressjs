@@ -2,7 +2,7 @@
 
 Demo：[Demo](https://letswritetw.github.io/letswrite-compressjs/)
 
-<!-- 筆記文：[Let's Write](https://www.letswrite.tw/compressjs/) -->
+筆記文：[Let's Write](https://www.letswrite.tw/compressjs/)
 
 ## 使用套件
 
